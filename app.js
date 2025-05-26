@@ -1,8 +1,9 @@
 // ✅ 1. Supabase client setup
 const supabaseUrl = 'https://fipvrtzlzddexixbfeyv.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+// ✅ 2. Then set up user ID
 let userId = localStorage.getItem("supabase_user_id");
 if (!userId) {
   userId = crypto.randomUUID();

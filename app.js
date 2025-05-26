@@ -220,3 +220,14 @@ async function testSupabaseConnection() {
     console.error("❌ Unexpected error testing Supabase:", err);
   }
 }
+
+supabase
+  .from("progress_log")
+  .select("*")
+  .then(({ data, error }) => {
+    if (error) {
+      console.error("❌ Supabase test failed:", error.message);
+    } else {
+      console.log("✅ Supabase connected! Sample data:", data);
+    }
+  });

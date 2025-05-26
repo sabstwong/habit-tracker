@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>💪 My Daily Tracker</h1>
+
+    <ul id="habitList">
+      <li><label><input type="checkbox" /> Japanese Practice for 15 min</label></li>
+      <li><label><input type="checkbox" /> Spanish Practice for 15 min</label></li>
+      <li><label><input type="checkbox" /> Chinese Practice</label></li>
+      <li><label><input type="checkbox" /> Drawing Practice</label></li>
+      <li><label><input type="checkbox" /> Sketch for 15 min</label></li>
+      <li><label><input type="checkbox" /> SQL Practice</label></li>
+      <li><label><input type="checkbox" /> Chess Puzzle (1 game)</label></li>
+      <li><label><input type="checkbox" /> Coding Practice</label></li>
+      <li><label><input type="checkbox" /> Learn Unreal Engine</label></li>
+      <li><label><input type="checkbox" /> 3D Practice</label></li>
+    </ul>
+
+    <button onclick="saveProgress()">Save Progress</button>
+
+    <h2>📅 Progress History</h2>
+    <div id="history"></div>
+
+    <h2>📊 Progress Chart</h2>
+    <canvas id="progressChart" width="400" height="200"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+<button onclick="clearProgress()">Clear All Progress</button>

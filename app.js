@@ -1,28 +1,19 @@
 // ======================
 // Supabase Configuration
 // ======================
+// Replace 'YOUR_SUPABASE_KEY' with your actual Supabase 'anon public' key.
+// This key is safe to expose in client-side code.
 const SUPABASE_URL = 'https://fipvrtzlzddexixbfeyv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkmaOw1AzLbo6I'; 
-const TABLE_NAME = 'progress_log';
+const SUPABASE_KEY = 'YOUR_SUPABASE_KEY'; // <--- IMPORTANT: REPLACE THIS WITH YOUR ACTUAL KEY
+const TABLE_NAME = 'progress_log'; // Name of your Supabase table for progress tracking
 
-let supabase;
-try {
-    // Initialize Supabase client. The 'Supabase' object is globally available 
-    // because of the <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    // tag in the HTML.
-    supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch (err) {
-    console.error('Failed to initialize Supabase client:', err);
-    // In a real application, you might display a more user-friendly error message
-    // or a fallback UI here.
-    alert('Error: Could not initialize Supabase. Please check your console for details.');
-}
+let supabase; // Declare the Supabase client globally, but initialize it later.
 
 // ======================
 // Task Definitions (Consolidated and Frozen for safety)
 // ======================
 // This object defines all the tasks available in the tracker, along with their descriptions.
-// Object.freeze makes the object immutable, preventing accidental modifications.
+// Object.freeze makes the object immutable, preventing accidental modifications during runtime.
 const TASKS = Object.freeze({
     "Japanese Practice for 15 min": "Learn 10 hiragana or practice phrases.",
     "Spanish Practice for 15 min": "Babbel or Spanish podcast.",
@@ -60,7 +51,7 @@ let chartInstance = null; // Variable to hold the Chart.js instance, allowing it
 async function setupTaskCheckboxes() {
     const container = document.getElementById('tasksContainer');
     if (!container) {
-        console.error("tasksContainer element not found!");
+        console.error("tasksContainer element not found! Cannot set up checkboxes.");
         return;
     }
     container.innerHTML = ''; // Clear any existing tasks before adding new ones
@@ -528,6 +519,23 @@ async function testSupabaseConnection() {
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Setup the task checkboxes once when the app loads
     setupTaskCheckboxes();
+
+    // --- IMPORTANT: Supabase client initialization ---
+    try {
+        if (typeof Supabase !== 'undefined' && Supabase.createClient) {
+            supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('Supabase client initialized successfully.');
+        } else {
+            console.error('Supabase library not loaded or "Supabase" object is undefined.');
+            alert('Error: Supabase library not loaded. Please check your internet connection and console for details.');
+            return; // Stop execution if Supabase isn't ready
+        }
+    } catch (error) {
+        console.error('Error initializing Supabase client:', error.message);
+        alert('Error initializing Supabase client: ' + error.message);
+        return;
+    }
+    // --- END Supabase client initialization ---
 
     // 2. Set up the authentication state change listener FIRST.
     // This listener will automatically call handleAuthChange whenever the user's login status changes.

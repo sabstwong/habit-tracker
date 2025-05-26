@@ -4,7 +4,7 @@
 // Replace 'YOUR_SUPABASE_KEY' with your actual Supabase 'anon public' key.
 // This key is safe to expose in client-side code.
 const SUPABASE_URL = 'https://fipvrtzlzddexixbfeyv.supabase.co';
-const SUPABASE_KEY = 'YOUR_SUPABASE_KEY'; // <--- IMPORTANT: REPLACE THIS WITH YOUR ACTUAL KEY
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I'; // <--- IMPORTANT: REPLACE THIS WITH YOUR ACTUAL KEY
 const TABLE_NAME = 'progress_log'; // Name of your Supabase table for progress tracking
 
 let supabase; // Declare the Supabase client globally, but initialize it later.

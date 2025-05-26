@@ -1,22 +1,116 @@
 // ======================
-// Supabase Configuration
+// Supabase Setup - Declare variables globally but initialize later
 // ======================
-const SUPABASE_URL = 'https://fipvrtzlzddexixbfeyv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkmaOw1AzLbo6I'; 
-const TABLE_NAME = 'progress_log';
+const SUPABASE_URL = 'https://fipvrtzlzddexixbfeyv.supabase.co'; // Ensure this is your correct URL
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I'; // Ensure this is your correct anon public key
 
-let supabase;
-try {
-    // Initialize Supabase client. The 'Supabase' object is globally available 
-    // because of the <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    // tag in the HTML.
-    supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch (err) {
-    console.error('Failed to initialize Supabase client:', err);
-    // In a real application, you might display a more user-friendly error message
-    // or a fallback UI here.
-    alert('Error: Could not initialize Supabase. Please check your console for details.');
+let supabase; // Declare supabase here, but don't initialize yet
+
+// ... (keep all your other functions like testSupabaseConnection, signIn, signUp, etc., as they are) ...
+
+
+// ======================
+// Main Initialization and Event Listeners
+// ======================
+document.addEventListener('DOMContentLoaded', async () => {
+    // --- IMPORTANT CHANGE HERE ---
+    // Initialize Supabase client ONLY after DOM is fully loaded and CDN scripts are parsed
+    try {
+        if (typeof Supabase !== 'undefined' && Supabase.createClient) {
+            supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('Supabase client initialized successfully.');
+        } else {
+            console.error('Supabase library not loaded or "Supabase" object is undefined.');
+            alert('Error: Supabase library not loaded. Please check your internet connection and console for details.');
+            return; // Stop execution if Supabase isn't ready
+        }
+    } catch (error) {
+        console.error('Error initializing Supabase client:', error.message);
+        alert('Error initializing Supabase client: ' + error.message);
+        return;
+    }
+    // --- END IMPORTANT CHANGE ---
+
+    // 1. Get DOM elements (these should already be defined if your HTML is standard)
+    const authContainer = document.getElementById('auth-container');
+    const appContent = document.getElementById('app-content');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const authMessage = document.getElementById('authMessage');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const userDisplay = document.getElementById('userDisplay');
+    const tasksContainer = document.getElementById('tasksContainer');
+    const progressChartCanvas = document.getElementById('progressChart');
+    const historyDiv = document.getElementById('history'); // Make sure you have this in your HTML if using it
+
+    let progressChart; // For Chart.js instance
+
+    // 2. Initial Auth State Check and UI Update
+    updateAuthUI(); // This function now relies on 'supabase' being initialized
+
+    // 3. Set up Auth State Change Listener
+    supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session);
+        updateAuthUI(session);
+    });
+
+    // 4. Run a connection test to Supabase (optional, but good for debugging)
+    // This function will now also rely on 'supabase' being initialized
+    await testSupabaseConnection();
+
+    // 5. Load progress on page load if user is authenticated
+    if (supabase.auth.getSession()) {
+        await loadAndShowHistory();
+    }
+
+    // 6. Set up event listeners
+    // Authentication
+    if (signupBtn) signupBtn.addEventListener('click', () => signUp(emailInput.value, passwordInput.value));
+    if (loginBtn) loginBtn.addEventListener('click', () => signIn(emailInput.value, passwordInput.value));
+    if (logoutBtn) logoutBtn.addEventListener('click', signOut);
+
+    // Task & Progress Management
+    if (saveBtn) saveBtn.addEventListener('click', saveProgress);
+    if (clearBtn) clearBtn.addEventListener('click', clearProgress);
+
+    // Populate tasks
+    renderTasks();
+});
+
+
+// ======================
+// Helper Functions (Keep these as they are, but they will now use the globally initialized 'supabase' variable)
+// ======================
+
+// Example: testSupabaseConnection function (ensure it also uses the global 'supabase')
+async function testSupabaseConnection() {
+    console.log('Attempting to test Supabase connection...');
+    if (!supabase) {
+        console.error('❌ Supabase client is not initialized for connection test.');
+        alert('Supabase connection test failed: Client not initialized.');
+        return;
+    }
+    try {
+        const { data, error } = await supabase.from('progress_log').select('id').limit(1); // Try a simple query
+        if (error && error.message.includes('permission denied')) {
+            console.warn('⚠️ Supabase connection warning: Permission denied. This might be an RLS issue, but the connection itself is active.');
+            // alert('Supabase connection active, but RLS might be blocking access. Check RLS policies.');
+        } else if (error) {
+            throw error;
+        } else {
+            console.log('✅ Supabase connection successful.');
+        }
+    } catch (error) {
+        console.error('❌ Supabase connection failed:', error.message);
+        alert('Supabase connection failed: ' + error.message);
+    }
 }
+
+// ... rest of your functions (signIn, signUp, updateAuthUI, etc.) ...
 
 // ======================
 // Task Definitions (Consolidated and Frozen for safety)

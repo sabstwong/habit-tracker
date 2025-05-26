@@ -3,21 +3,25 @@ const supabaseUrl = 'https://fipvrtzlzddexixbfeyv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcHZydHpsemRkZXhpeGJmZXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjU1MDcsImV4cCI6MjA2MzgwMTUwN30.Byx_57gkgFrDNz_3fPSUv2quij69YkGmaOw1AzLbo6I';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+// ✅ 2. When page loads
+window.onload = async () => {
+  // Set up user ID
+  let userId = localStorage.getItem("supabase_user_id");
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("supabase_user_id", userId);
+  }
+  document.getElementById("userDisplay").textContent = "User ID: " + userId;
+  console.log("User ID:", userId);
 
-// ✅ 2. Then set up user ID
-let userId = localStorage.getItem("supabase_user_id");
-if (!userId) {
-  userId = crypto.randomUUID();
-  localStorage.setItem("supabase_user_id", userId);
-}
+  // Load history
+  await loadAndShowHistory(userId);
 
-// ✅ Debug line
-console.log("User ID:", userId);
-document.getElementById("userDisplay").textContent = "User ID: " + userId;
+  // Optional: test Supabase
+  await testSupabaseConnection();
+};
 
-
-
-// ✅ 2. Get local date in YYYY-MM-DD format
+// ✅ 3. Get local date
 function getTodayDate() {
   const now = new Date();
   const year = now.getFullYear();
@@ -26,7 +30,7 @@ function getTodayDate() {
   return `${year}-${month}-${day}`;
 }
 
-// ✅ 3. Task descriptions
+// ✅ 4. Task descriptions
 const taskDescriptions = {
   "Japanese Practice for 15 min": "Learn 10 hiragana or practice phrases using Duolingo or flashcards.",
   "Spanish Practice for 15 min": "Review vocabulary, listen to a Spanish song, or do a Babbel session.",
@@ -46,12 +50,13 @@ const taskDescriptions = {
   "SQL or Portfolio Project": "Work on SQL queries or update your project site."
 };
 
-// ✅ 4. Save progress to Supabase
+// ✅ 5. Save progress
 async function saveProgress() {
-  const checkboxes = document.querySelectorAll("input[type=checkbox]");
+  const userId = localStorage.getItem("supabase_user_id");
   const today = getTodayDate();
-
+  const checkboxes = document.querySelectorAll("input[type=checkbox]");
   const todayProgress = {};
+
   checkboxes.forEach((cb) => {
     const task = cb.parentElement.textContent.trim();
     todayProgress[task] = cb.checked;
@@ -70,16 +75,12 @@ async function saveProgress() {
     console.error(error);
   } else {
     alert("✅ Progress saved to Supabase!");
-    loadAndShowHistory();
+    loadAndShowHistory(userId);
   }
 }
 
-// ✅ 5. Load progress from Supabase
-window.onload = async () => {
-  await loadAndShowHistory();
-};
-
-async function loadAndShowHistory() {
+// ✅ 6. Load and display history
+async function loadAndShowHistory(userId) {
   const today = getTodayDate();
   const { data: rows, error } = await supabase
     .from("progress_log")
@@ -103,10 +104,11 @@ async function loadAndShowHistory() {
   rows.forEach((row) => {
     allProgress[row.date] = row.tasks;
   });
+
   showHistory(allProgress);
 }
 
-// ✅ 6. Display progress history
+// ✅ 7. Show progress history
 function showHistory(allProgress) {
   const historyDiv = document.getElementById("history");
   historyDiv.innerHTML = "";
@@ -142,7 +144,7 @@ function showHistory(allProgress) {
   renderChart(labels, percentages);
 }
 
-// ✅ 7. Render chart
+// ✅ 8. Render chart
 let chartInstance;
 
 function renderChart(labels, data) {
@@ -183,8 +185,10 @@ function renderChart(labels, data) {
   });
 }
 
-// ✅ 8. Clear cloud data
+// ✅ 9. Clear progress
 async function clearProgress() {
+  const userId = localStorage.getItem("supabase_user_id");
+
   const { error } = await supabase
     .from("progress_log")
     .delete()
@@ -198,6 +202,8 @@ async function clearProgress() {
     location.reload();
   }
 }
+
+// ✅ 10. Test Supabase connection (optional)
 async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase
@@ -214,5 +220,3 @@ async function testSupabaseConnection() {
     console.error("❌ Unexpected error testing Supabase:", err);
   }
 }
-
-testSupabaseConnection();

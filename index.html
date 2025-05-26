@@ -35,9 +35,16 @@
     <canvas id="progressChart" width="400" height="200"></canvas>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js"></script>
+<!-- Load Supabase library first -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<!-- Load Chart.js second -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Load your custom script last -->
+<script src="app.js"></script>
+
+
 </body>
 </html>
 

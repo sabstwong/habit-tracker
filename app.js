@@ -22,12 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function getToday() {
-  return new Date().toISOString().split('T')[0];
+  // ✅ Use local date, not UTC
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function setupTasks() {
   const container = document.getElementById('tasksContainer');
   container.innerHTML = '';
+
   TASKS.forEach(task => {
     const div = document.createElement('div');
     div.className = 'task-item';

@@ -15,11 +15,12 @@ const TASKS = {
 };
 
 // ======================
-// Fixed Date Functions (MODIFIED TO FIX TO MAY 26, 2025)
+// Date Functions (Dynamic for New York Eastern Time)
 // ======================
 /**
- * Gets a fixed date for testing purposes (May 26, 2025).
- * @returns {string} The fixed date as a string (e.g., "2025-05-26").
+/**
+ * Gets today's date in YYYY-MM-DD format using New York (Eastern Time) zone.
+ * @returns {string} Date string like "2025-05-27"
  */
 function getTodayDate() {
   const now = new Date();
@@ -36,6 +37,7 @@ function getTodayDate() {
   const [month, day, year] = easternTime.split('/');
   return `${year}-${month}-${day}`;
 }
+
 
 // ======================
 // Local Storage Functions (CRUCIAL FOR OFFLINE SAVE/LOAD)

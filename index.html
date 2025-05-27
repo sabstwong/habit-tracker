@@ -30,7 +30,7 @@
       margin-bottom: 1rem;
     }
 
-    #auth-container, #app-content {
+    #app-content {
       background-color: #fff;
       width: 100%;
       max-width: 600px;
@@ -38,15 +38,6 @@
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       margin-bottom: 1.5rem;
-    }
-
-    input[type="email"], input[type="password"] {
-      width: 100%;
-      padding: 0.75rem;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
     }
 
     button {
@@ -62,14 +53,6 @@
 
     button:hover {
       background-color: #45a049;
-    }
-
-    #logoutBtn {
-      background-color: #f44336;
-    }
-
-    #logoutBtn:hover {
-      background-color: #d32f2f;
     }
 
     #clearBtn {
@@ -132,17 +115,6 @@
       max-height: 300px;
     }
 
-    #authMessage {
-      color: red;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-
-    /* Updated: Make app-content always visible when auth is commented out */
-    #app-content {
-      display: block; 
-    }
-
     @media (max-width: 480px) {
       body {
         padding: 0.5rem;
@@ -165,19 +137,7 @@
 </head>
 
 <body>
-  <h1>💪 My Daily Tracker test</h1> 
-
-  <!--
-  <div id="auth-container">
-    <h2>Login / Signup</h2>
-    <input type="email" id="emailInput" placeholder="Email" autocomplete="email" />
-    <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" />
-    <button id="signupBtn">Sign Up</button>
-    <button id="loginBtn">Log In</button>
-    <button id="logoutBtn" style="display: none;">Log Out</button>
-    <p id="authMessage"></p>
-  </div>
-  -->
+  <h1>💪 My Daily Tracker</h1> 
 
   <div id="app-content">
     <p id="userDisplay">Loading user...</p>

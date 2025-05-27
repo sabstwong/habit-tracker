@@ -5,49 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Local Progress Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+  <link rel="stylesheet" href="style.css"> 
   <style>
+    /* These body styles are now minimal, as .container will handle the main layout */
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
+      /* Background color for the whole page */
+      background: #fef9f4; 
+      color: #333;
+      padding: 40px; /* Padding around the main container */
+      margin: 0;
+      /* Ensure body takes full height for centering or consistent padding on larger screens */
+      min-height: 100vh; 
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center the container horizontally */
+      justify-content: flex-start; /* Align content to the top */
     }
-    .task-item {
-      margin: 10px 0;
-      padding: 10px;
-      background: #f5f5f5;
-      border-radius: 5px;
-    }
-    #progressChart {
-      margin-top: 30px;
-    }
-    button {
-      padding: 10px 15px;
-      margin: 10px 5px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+    /* Removed the inline styles for max-width, margin: auto, padding from body here
+       as the .container class will now handle that. */
   </style>
 </head>
 <body>
-  <h1>My Daily Tracker</h1>
-  <p id="userDisplay">User ID: Loading...</p>
-  
-  <h2>Today's Tasks</h2>
-  <div id="tasksContainer"></div>
-  
-  <button id="saveBtn">Save Progress</button>
-  <button id="clearBtn">Clear All Data</button>
-  
-  <div id="history">
-    <h2>Progress History</h2>
-  </div>
-  
-  <canvas id="progressChart"></canvas>
-
-  <script src="app.js"></script>
+  <div class="container">
+    <h1>My Daily Tracker</h1>
+    <p id="userDisplay">User ID: Loading...</p>
+    
+    <h2>Today's Tasks</h2>
+    <div id="tasksContainer"></div>
+    
+    <button id="saveBtn">Save Progress</button>
+    <button id="clearBtn">Clear All Data</button>
+    
+    <div id="history">
+      <h2>Progress History</h2>
+    </div>
+    
+    <canvas id="progressChart"></canvas>
+  </div> <script src="app.js"></script>
 </body>
 </html>

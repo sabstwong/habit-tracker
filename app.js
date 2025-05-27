@@ -22,19 +22,19 @@ const TASKS = {
  * @returns {string} The fixed date as a string (e.g., "2025-05-26").
  */
 function getTodayDate() {
-    // Return a fixed date string for May 26, 2025
-    return "2025-05-26";
-}
+  const now = new Date();
 
-/**
- * Formats a date string into a more readable format (e.g., "May 26, 2025").
- * @param {string} dateStr - The date string in YYYY-MM-DD format.
- * @returns {string} The formatted date string.
- */
-function formatDisplayDate(dateStr) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    // Pass the date string directly to Date constructor
-    return new Date(dateStr).toLocaleDateString(undefined, options);
+  // Convert to US Eastern Time (New York)
+  const easternTime = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(now);
+
+  // Reformat MM/DD/YYYY → YYYY-MM-DD
+  const [month, day, year] = easternTime.split('/');
+  return `${year}-${month}-${day}`;
 }
 
 // ======================

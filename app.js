@@ -33,13 +33,13 @@ function setupTasks() {
   Object.entries(TASKS).forEach(([task, description]) => {
     const div = document.createElement('div');
     div.className = 'task-item';
-    div.innerHTML = `
-      <input type="checkbox" id="${task}" />
-      <label for="${task}">
-        ${task}
-        <br><span class="task-desc">${description}</span>
-      </label>
-    `;
+   div.innerHTML = `
+  <input type="checkbox" id="${task}" />
+  <label for="${task}">
+    <span class="task-title">${task}</span>
+    <span class="task-desc">${description}</span>
+  </label>
+`;
     container.appendChild(div);
   });
 }

@@ -1,47 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Local Progress Tracker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Daily Tracker</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
-  <link rel="stylesheet" href="style.css"> 
-  <style>
-    /* These body styles are now minimal, as .container will handle the main layout */
-    body {
-      font-family: Arial, sans-serif;
-      /* Background color for the whole page */
-      background: #fef9f4; 
-      color: #333;
-      padding: 40px; /* Padding around the main container */
-      margin: 0;
-      /* Ensure body takes full height for centering or consistent padding on larger screens */
-      min-height: 100vh; 
-      display: flex;
-      flex-direction: column;
-      align-items: center; /* Center the container horizontally */
-      justify-content: flex-start; /* Align content to the top */
-    }
-    /* Removed the inline styles for max-width, margin: auto, padding from body here
-       as the .container class will now handle that. */
-  </style>
 </head>
 <body>
   <div class="container">
-    <h1>My Daily Tracker</h1>
-    <p id="userDisplay">User ID: Loading...</p>
-    
-    <h2>Today's Tasks</h2>
+    <h1>💪 My Daily Tracker</h1>
+
     <div id="tasksContainer"></div>
-    
-    <button id="saveBtn">Save Progress</button>
-    <button id="clearBtn">Clear All Data</button>
-    
-    <div id="history">
-      <h2>Progress History</h2>
+
+    <div class="button-group">
+      <button id="saveBtn">Save Progress</button>
+      <button id="clearBtn">Clear All Progress</button>
     </div>
-    
+
+    <div id="history">
+      <h2>📊 Progress History</h2>
+    </div>
+
     <canvas id="progressChart"></canvas>
-  </div> <script src="app.js"></script>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

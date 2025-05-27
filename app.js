@@ -22,7 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function getToday() {
-  return new Date().toISOString().split('T')[0];
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for local timezone
+  return now.toISOString().split('T')[0];
 }
 
 function setupTasks() {
@@ -135,7 +137,11 @@ function renderChart(labels, data) {
       scales: {
         y: {
           beginAtZero: true,
-          max: 100
+          max: 100,
+          title: {
+            display: true,
+            text: '% of Tasks Completed'
+          }
         }
       },
       plugins: {

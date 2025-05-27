@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Daily Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
   <style>
     * { box-sizing: border-box; }
@@ -77,12 +76,6 @@
   </div>
 
   <script>
-    const supabase = supabase.createClient(
-      'https://fipvrtzlzddexixbfeyv.supabase.co',
-      'YOUR_PUBLIC_SUPABASE_ANON_KEY' // replace this with your real key
-    );
-
-    const TABLE_NAME = 'progress_log';
     const TASKS = [
       "Japanese Practice for 15 min",
       "Spanish Practice for 15 min",
@@ -96,20 +89,19 @@
       "3D Practice"
     ];
 
-    let userId = localStorage.getItem('tracker_user_id');
-    if (!userId) {
-      userId = crypto.randomUUID();
-      localStorage.setItem('tracker_user_id', userId);
+    const STORAGE_KEY = "dailyProgressLog";
+    let chart;
+
+    function getToday() {
+      return new Date().toISOString().split("T")[0];
     }
 
-    const getToday = () => new Date().toISOString().split('T')[0];
-
     function setupTasks() {
-      const container = document.getElementById('tasksContainer');
-      container.innerHTML = '';
+      const container = document.getElementById("tasksContainer");
+      container.innerHTML = "";
       TASKS.forEach(task => {
-        const div = document.createElement('div');
-        div.className = 'task-item';
+        const div = document.createElement("div");
+        div.className = "task-item";
         div.innerHTML = `
           <input type="checkbox" id="${task}" />
           <label for="${task}">${task}</label>
@@ -118,90 +110,63 @@
       });
     }
 
-    async function saveProgress() {
-      const date = getToday();
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      const taskData = {};
+    function saveProgress() {
+      const today = getToday();
+      const checkboxes = document.querySelectorAll("input[type='checkbox']");
+      const taskStatus = {};
 
       checkboxes.forEach(cb => {
         const task = cb.nextElementSibling.textContent;
-        taskData[task] = cb.checked;
+        taskStatus[task] = cb.checked;
       });
 
-      const { error } = await supabase
-        .from(TABLE_NAME)
-        .upsert({ user_id: userId, date, tasks: taskData }, { onConflict: 'user_id,date' });
+      let progressLog = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      progressLog[today] = taskStatus;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progressLog));
 
-      if (error) {
-        alert("❌ Failed to save progress.");
-        console.error(error);
-      } else {
-        alert("✅ Progress saved!");
-        loadProgress();
-      }
+      alert("✅ Progress saved!");
+      loadProgress();
     }
 
-    async function clearProgress() {
-      if (!confirm("Are you sure you want to delete your data?")) return;
-
-      const { error } = await supabase
-        .from(TABLE_NAME)
-        .delete()
-        .eq('user_id', userId);
-
-      if (error) {
-        alert("❌ Failed to clear data.");
-        console.error(error);
-      } else {
+    function clearProgress() {
+      if (confirm("Are you sure you want to clear all progress?")) {
+        localStorage.removeItem(STORAGE_KEY);
         alert("✅ All progress cleared!");
         location.reload();
       }
     }
 
-    async function loadProgress() {
-      const { data, error } = await supabase
-        .from(TABLE_NAME)
-        .select('*')
-        .eq('user_id', userId)
-        .order('date', { ascending: true });
-
-      if (error) {
-        console.error("Load error:", error);
-        return;
-      }
-
+    function loadProgress() {
+      const progressLog = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
       const today = getToday();
-      const todayRow = data.find(row => row.date === today);
+      const todayData = progressLog[today] || {};
 
-      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(cb => {
+      // Update checkboxes
+      document.querySelectorAll("input[type='checkbox']").forEach(cb => {
         const task = cb.nextElementSibling.textContent;
-        cb.checked = todayRow?.tasks?.[task] || false;
+        cb.checked = todayData?.[task] || false;
       });
 
-      showHistory(data);
+      renderHistory(progressLog);
     }
 
-    let chart;
-
-    function showHistory(rows) {
-      const history = document.getElementById('history');
-      history.innerHTML = '';
+    function renderHistory(progressLog) {
+      const history = document.getElementById("history");
+      history.innerHTML = "";
 
       const labels = [];
       const percentages = [];
 
-      rows.forEach(row => {
-        const tasks = row.tasks || {};
+      Object.entries(progressLog).forEach(([date, tasks]) => {
         const completed = Object.values(tasks).filter(Boolean).length;
         const percent = Math.round((completed / TASKS.length) * 100);
 
-        const div = document.createElement('div');
-        div.className = 'history-item';
-        div.innerHTML = `<strong>${row.date}</strong> – ${completed}/${TASKS.length} tasks completed (${percent}%)`;
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `<strong>${date}</strong> – ${completed}/${TASKS.length} tasks completed (${percent}%)`;
         history.appendChild(div);
 
-        labels.push(row.date);
+        labels.push(date);
         percentages.push(percent);
       });
 
@@ -209,17 +174,18 @@
     }
 
     function renderChart(labels, data) {
-      const ctx = document.getElementById('progressChart').getContext('2d');
+      const ctx = document.getElementById("progressChart").getContext("2d");
       if (chart) chart.destroy();
+
       chart = new Chart(ctx, {
-        type: 'bar',
+        type: "bar",
         data: {
-          labels: labels,
+          labels,
           datasets: [{
-            label: '% Complete',
-            data: data,
-            backgroundColor: 'rgba(75,192,192,0.5)',
-            borderColor: 'rgba(75,192,192,1)',
+            label: "% Complete",
+            data,
+            backgroundColor: "rgba(75,192,192,0.5)",
+            borderColor: "rgba(75,192,192,1)",
             borderWidth: 1
           }]
         },
@@ -238,6 +204,7 @@
       });
     }
 
+    // Init
     setupTasks();
     loadProgress();
   </script>

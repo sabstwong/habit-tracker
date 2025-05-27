@@ -14,6 +14,7 @@ const TASKS = {
   "3D Practice": "Open Blender and model something."
 };
 
+const USER_ID = 'local_storage_test_user';
 let chartInstance = null;
 
 // ======================
@@ -28,7 +29,7 @@ function getTodayDate() {
     day: '2-digit'
   }).format(now);
   const [month, day, year] = easternTime.split('/');
-  return `${year}-${month}-${day}`;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
 function formatDisplayDate(dateStr) {
@@ -45,15 +46,15 @@ function formatDisplayDate(dateStr) {
 // ======================
 // Local Storage Functions
 // ======================
-function loadFromLocalStorage(userId) {
-  const storedData = localStorage.getItem(`progress_${userId}`);
+function loadFromLocalStorage() {
+  const storedData = localStorage.getItem(`progress_${USER_ID}`);
   return storedData ? JSON.parse(storedData) : {};
 }
 
-function saveToLocalStorage(userId, date, tasksData) {
-  const history = loadFromLocalStorage(userId);
+function saveToLocalStorage(date, tasksData) {
+  const history = loadFromLocalStorage();
   history[date] = tasksData;
-  localStorage.setItem(`progress_${userId}`, JSON.stringify(history));
+  localStorage.setItem(`progress_${USER_ID}`, JSON.stringify(history));
   console.log(`Saved progress for ${date}`);
 }
 
@@ -62,8 +63,10 @@ function saveToLocalStorage(userId, date, tasksData) {
 // ======================
 function setupTaskCheckboxes() {
   const container = document.getElementById('tasksContainer');
+  if (!container) return;
+  
   container.innerHTML = '';
-  Object.keys(TASKS).forEach(task => {
+  Object.entries(TASKS).forEach(([task, description]) => {
     const div = document.createElement('div');
     div.className = 'task-item';
     div.innerHTML = `
@@ -71,6 +74,7 @@ function setupTaskCheckboxes() {
         <input type="checkbox" />
         ${task}
       </label>
+      <p class="task-description">${description}</p>
     `;
     container.appendChild(div);
   });
@@ -79,32 +83,30 @@ function setupTaskCheckboxes() {
 // ======================
 // Save / Load
 // ======================
-async function saveProgress() {
-  const userId = 'local_storage_test_user';
+function saveProgress() {
   const today = getTodayDate();
-
   const tasks = {};
+
   document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(cb => {
     const taskName = cb.parentElement.textContent.trim();
     tasks[taskName] = cb.checked;
   });
 
-  saveToLocalStorage(userId, today, tasks);
+  saveToLocalStorage(today, tasks);
   alert("✅ Progress saved!");
   loadAndShowHistory();
 }
 
 function loadAndShowHistory() {
-  const userId = 'local_storage_test_user';
   const today = getTodayDate();
-  const history = loadFromLocalStorage(userId);
+  const history = loadFromLocalStorage();
 
   if (!history[today]) {
     history[today] = Object.keys(TASKS).reduce((acc, task) => {
       acc[task] = false;
       return acc;
     }, {});
-    saveToLocalStorage(userId, today, history[today]);
+    saveToLocalStorage(today, history[today]);
   }
 
   document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(cb => {
@@ -120,6 +122,8 @@ function loadAndShowHistory() {
 // ======================
 function showHistory(history) {
   const historyDiv = document.getElementById("history");
+  if (!historyDiv) return;
+  
   historyDiv.innerHTML = '<h2>📊 Progress History</h2>';
 
   const chartData = {
@@ -164,7 +168,8 @@ function showHistory(history) {
 }
 
 function renderChart(labels, data) {
-  const ctx = document.getElementById("progressChart").getContext("2d");
+  const ctx = document.getElementById("progressChart")?.getContext("2d");
+  if (!ctx) return;
 
   if (chartInstance) chartInstance.destroy();
 
@@ -208,10 +213,9 @@ function renderChart(labels, data) {
 // ======================
 // Clear Data
 // ======================
-async function clearProgress() {
-  const userId = 'local_storage_test_user';
+function clearProgress() {
   if (confirm("Delete all progress? This cannot be undone.")) {
-    localStorage.removeItem(`progress_${userId}`);
+    localStorage.removeItem(`progress_${USER_ID}`);
     alert("✅ Data cleared.");
     loadAndShowHistory();
   }
@@ -223,6 +227,7 @@ async function clearProgress() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTaskCheckboxes();
   loadAndShowHistory();
+  
   document.getElementById('saveBtn')?.addEventListener('click', saveProgress);
   document.getElementById('clearBtn')?.addEventListener('click', clearProgress);
 });

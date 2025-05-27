@@ -138,8 +138,9 @@
       margin-top: 0.5rem;
     }
 
+    /* Updated: Make app-content always visible when auth is commented out */
     #app-content {
-      display: none;
+      display: block; 
     }
 
     @media (max-width: 480px) {
@@ -166,6 +167,7 @@
 <body>
   <h1>💪 My Daily Tracker test</h1> 
 
+  <!--
   <div id="auth-container">
     <h2>Login / Signup</h2>
     <input type="email" id="emailInput" placeholder="Email" autocomplete="email" />
@@ -175,6 +177,7 @@
     <button id="logoutBtn" style="display: none;">Log Out</button>
     <p id="authMessage"></p>
   </div>
+  -->
 
   <div id="app-content">
     <p id="userDisplay">Loading user...</p>

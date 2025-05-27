@@ -2,319 +2,227 @@
 // Configuration
 // ======================
 const TASKS = {
-    "Japanese Practice for 15 min": "Learn 10 hiragana or practice phrases.",
-    "Spanish Practice for 15 min": "Babbel or Spanish podcast.",
-    "Chinese Practice": "Practice tones or flashcards.",
-    "Drawing Practice": "Practice perspective or shading.",
-    "Sketch for 15 min": "Do a rough drawing.",
-    "SQL Practice": "Try a SQL challenge.",
-    "Chess Puzzle (1 game)": "Do 5 puzzles or play 1 match.",
-    "Coding Practice": "Work on your side project.",
-    "Learn Unreal Engine": "Watch a UE tutorial.",
-    "3D Practice": "Open Blender and model something."
+  "Japanese Practice for 15 min": "Learn 10 hiragana or practice phrases.",
+  "Spanish Practice for 15 min": "Babbel or Spanish podcast.",
+  "Chinese Practice": "Practice tones or flashcards.",
+  "Drawing Practice": "Practice perspective or shading.",
+  "Sketch for 15 min": "Do a rough drawing.",
+  "SQL Practice": "Try a SQL challenge.",
+  "Chess Puzzle (1 game)": "Do 5 puzzles or play 1 match.",
+  "Coding Practice": "Work on your side project.",
+  "Learn Unreal Engine": "Watch a UE tutorial.",
+  "3D Practice": "Open Blender and model something."
 };
 
+let chartInstance = null;
+
 // ======================
-// Date Functions (Dynamic for New York Eastern Time)
+// Date Functions (Eastern Time)
 // ======================
-/**
-/**
- * Gets today's date in YYYY-MM-DD format using New York (Eastern Time) zone.
- * @returns {string} Date string like "2025-05-27"
- */
 function getTodayDate() {
   const now = new Date();
-
-  // Convert to US Eastern Time (New York)
   const easternTime = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
   }).format(now);
-
-  // Reformat MM/DD/YYYY → YYYY-MM-DD
   const [month, day, year] = easternTime.split('/');
   return `${year}-${month}-${day}`;
 }
 
+function formatDisplayDate(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  const dateObj = new Date(`${year}-${month}-${day}T00:00:00`);
+  return dateObj.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/New_York'
+  });
+}
 
 // ======================
-// Local Storage Functions (CRUCIAL FOR OFFLINE SAVE/LOAD)
-// (These were missing from your snippet, but are essential for localStorage)
+// Local Storage Functions
 // ======================
-/**
- * Loads the entire progress history for a given user ID from localStorage.
- * @param {string} userId - The ID of the user.
- * @returns {object} The loaded history object, or an empty object if not found.
- */
 function loadFromLocalStorage(userId) {
-    if (!userId) return {}; // Handle case where userId is not set (shouldn't happen with fixed ID)
-    const storedData = localStorage.getItem(`progress_${userId}`);
-    return storedData ? JSON.parse(storedData) : {};
+  const storedData = localStorage.getItem(`progress_${userId}`);
+  return storedData ? JSON.parse(storedData) : {};
 }
 
-/**
- * Saves a specific day's progress for a user to localStorage.
- * @param {string} userId - The ID of the user.
- * @param {string} date - The date of the progress.
- * @param {object} tasksData - The object containing task completion status for the date.
- */
 function saveToLocalStorage(userId, date, tasksData) {
-    if (!userId) {
-        console.error("Cannot save to localStorage: userId is missing.");
-        return;
-    }
-    const history = loadFromLocalStorage(userId); // Load existing history
-    history[date] = tasksData; // Update/add the specific date's tasks
-    localStorage.setItem(`progress_${userId}`, JSON.stringify(history));
-    console.log(`Saved progress for ${date} for user ${userId} to localStorage.`);
+  const history = loadFromLocalStorage(userId);
+  history[date] = tasksData;
+  localStorage.setItem(`progress_${userId}`, JSON.stringify(history));
+  console.log(`Saved progress for ${date}`);
 }
-
 
 // ======================
 // UI Setup
 // ======================
-/**
- * Dynamically creates checkbox elements for each task defined in the TASKS constant.
- * These checkboxes are displayed in the 'tasksContainer' div in the HTML.
- */
-async function setupTaskCheckboxes() {
-    const container = document.getElementById('tasksContainer');
-    if (!container) {
-        console.error("tasksContainer element not found! Cannot set up checkboxes.");
-        return;
-    }
-    container.innerHTML = ''; // Clear any existing tasks before adding new ones
-    Object.entries(TASKS).forEach(([taskName, description]) => {
-        const div = document.createElement('div');
-        div.className = 'task-item';
-        div.innerHTML = `
-            <label>
-                <input type="checkbox"> ${taskName}
-            </label>
-            <p class="task-description">${description}</p>
-        `;
-        container.appendChild(div);
-    });
+function setupTaskCheckboxes() {
+  const container = document.getElementById('tasksContainer');
+  container.innerHTML = '';
+  Object.keys(TASKS).forEach(task => {
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" />
+        ${task}
+      </label>
+    `;
+    container.appendChild(div);
+  });
 }
 
 // ======================
-// Core App Functions (Data Management - MODIFIED for localStorage)
+// Save / Load
 // ======================
-let chartInstance = null; // Variable to hold the Chart.js instance
-
-/**
- * Saves the current state of the checkboxes to localStorage.
- */
 async function saveProgress() {
-    // IMPORTANT: For local storage, use a fixed ID for simplicity
-    const userId = 'local_storage_test_user';
-    const today = getTodayDate(); // This will now return "2025-05-26"
+  const userId = 'local_storage_test_user';
+  const today = getTodayDate();
 
-    // Collect the state of all task checkboxes
-    const tasks = {};
-    document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(checkbox => {
-        const taskName = checkbox.parentElement.textContent.trim(); // Get task name from label
-        tasks[taskName] = checkbox.checked; // Store true/false for checked state
-    });
+  const tasks = {};
+  document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(cb => {
+    const taskName = cb.parentElement.textContent.trim();
+    tasks[taskName] = cb.checked;
+  });
 
-    console.log("Saving progress to localStorage:", { userId, today, tasks: tasks });
-
-    saveToLocalStorage(userId, today, tasks); // Use the new localStorage save function
-    alert("✅ Progress saved successfully to local storage!");
-    await loadAndShowHistory(); // Reload history to reflect the saved changes
+  saveToLocalStorage(userId, today, tasks);
+  alert("✅ Progress saved!");
+  loadAndShowHistory();
 }
 
-/**
- * Loads the progress history for the fixed user ID from localStorage and updates the UI.
- */
 function loadAndShowHistory() {
-    // IMPORTANT: For local storage, use a fixed ID for simplicity
-    const userId = 'local_storage_test_user';
+  const userId = 'local_storage_test_user';
+  const today = getTodayDate();
+  const history = loadFromLocalStorage(userId);
 
-    const history = loadFromLocalStorage(userId); // Use the new localStorage load function
+  if (!history[today]) {
+    history[today] = Object.keys(TASKS).reduce((acc, task) => {
+      acc[task] = false;
+      return acc;
+    }, {});
+    saveToLocalStorage(userId, today, history[today]);
+  }
 
-    const today = getTodayDate(); // This will now return "2025-05-26"
+  document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(cb => {
+    const task = cb.parentElement.textContent.trim();
+    cb.checked = history[today][task] || false;
+  });
 
-    // Ensure today's entry exists in history, initializing if not
-    if (!history[today]) {
-        history[today] = Object.keys(TASKS).reduce((acc, task) => {
-            acc[task] = false; // All tasks unchecked by default for a new day
-            return acc;
-        }, {});
-        // Save this initialized empty state for today to localStorage immediately
-        saveToLocalStorage(userId, today, history[today]);
-    }
-
-    // Update today's checkboxes based on the loaded (or newly initialized) state
-    document.querySelectorAll('#tasksContainer input[type="checkbox"]').forEach(checkbox => {
-        const taskName = checkbox.parentElement.textContent.trim();
-        checkbox.checked = history[today][taskName] || false;
-    });
-
-    showHistory(history); // Render the fetched history and update the chart
+  showHistory(history);
 }
 
-/**
- * Renders the historical progress data in the 'history' div and updates the Chart.js graph.
- * @param {object} history - An object containing progress log entries keyed by date.
- */
+// ======================
+// History + Chart
+// ======================
 function showHistory(history) {
-    const historyDiv = document.getElementById("history");
-    if (!historyDiv) {
-        console.error("history element not found!");
-        return;
-    }
+  const historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = '<h2>📊 Progress History</h2>';
 
-    // Clear previous history content
-    historyDiv.innerHTML = '<h2>📊 Progress History</h2>';
+  const chartData = {
+    labels: [],
+    percentages: []
+  };
 
-    const chartData = {
-        labels: [],     // Dates for the chart's X-axis
-        percentages: [] // Completion percentages for the chart's Y-axis
-    };
+  const sortedDates = Object.keys(history).sort((a, b) => new Date(a) - new Date(b));
 
-    // Sort dates in ascending order for correct chart display (oldest first)
-    const sortedDates = Object.keys(history).sort((a, b) => new Date(a) - new Date(b));
+  if (sortedDates.length === 0) {
+    historyDiv.innerHTML += '<p>No history yet.</p>';
+    if (chartInstance) chartInstance.destroy();
+    return;
+  }
 
-    // If no history data is available after sorting, display a message and clear the chart
-    if (!sortedDates || sortedDates.length === 0) {
-        historyDiv.innerHTML += '<p>No history found. Start tracking your progress!</p>';
-        if (chartInstance) {
-            chartInstance.destroy(); // Destroy existing chart if no data
-            chartInstance = null;
+  sortedDates.forEach(date => {
+    const tasks = history[date];
+    const total = Object.keys(TASKS).length;
+    const completed = Object.values(tasks).filter(Boolean).length;
+    const percent = Math.round((completed / total) * 100);
+
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <strong>${formatDisplayDate(date)}</strong> – ${completed}/${total} tasks completed (${percent}%)
+      <ul>
+        ${
+          Object.entries(tasks)
+            .filter(([_, done]) => done)
+            .map(([name]) => `<li><strong>${name}</strong><br><em>${TASKS[name]}</em></li>`)
+            .join("") || "<li>No tasks completed</li>"
         }
-        return;
-    }
+      </ul>
+    `;
+    historyDiv.appendChild(div);
 
-    sortedDates.forEach(date => {
-        const tasksInEntry = history[date] || {}; // Get tasks for the current entry, default to empty object
-        const totalTasksDefined = Object.keys(TASKS).length; // Get the total number of tasks defined in the app
-        const completedInEntry = Object.values(tasksInEntry).filter(Boolean).length; // Count completed tasks
+    chartData.labels.push(formatDisplayDate(date));
+    chartData.percentages.push(percent);
+  });
 
-        // Calculate completion percentage. Handle division by zero if no tasks are defined.
-        const completionPercent = totalTasksDefined > 0 ?
-                                  Math.round((completedInEntry / totalTasksDefined) * 100) : 0;
-
-        const historyItem = document.createElement("div");
-        historyItem.className = "history-item";
-        historyItem.innerHTML = `
-            <strong>${formatDisplayDate(date)}</strong> –
-            ${completedInEntry}/${totalTasksDefined} tasks completed
-            (${completionPercent}%)
-            <ul>
-                ${Object.entries(tasksInEntry)
-                    .filter(([_, done]) => done) // Filter for tasks marked as true (completed)
-                    .map(([name]) => `
-                        <li>
-                            <strong>${name}</strong><br>
-                            <em>${TASKS[name] || "No description available"}</em>
-                        </li>
-                    `).join("") || "<li>No tasks completed</li>"}
-            </ul>
-        `;
-        historyDiv.appendChild(historyItem);
-
-        chartData.labels.push(formatDisplayDate(date)); // Use formatted date for display
-        chartData.percentages.push(completionPercent);
-    });
-
-    renderChart(chartData.labels, chartData.percentages); // Update the chart with new data
+  renderChart(chartData.labels, chartData.percentages);
 }
 
-// ======================
-// Chart Functions
-// ======================
-/**
- * Renders or updates the bar chart displaying progress percentages over time.
- * @param {Array<string>} labels - Dates for the chart's X-axis.
- * @param {Array<number>} data - Completion percentages for the chart's Y-axis.
- */
 function renderChart(labels, data) {
-    const canvas = document.getElementById("progressChart");
-    if (!canvas) {
-        console.error("progressChart canvas element not found!");
-        return;
-    }
+  const ctx = document.getElementById("progressChart").getContext("2d");
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-        console.error("Could not get 2D rendering context for canvas!");
-        return;
-    }
+  if (chartInstance) chartInstance.destroy();
 
-    // Destroy any existing chart instance before creating a new one to prevent memory leaks and conflicts.
-    if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-    }
-
-    chartInstance = new Chart(ctx, {
-        type: "bar", // Bar chart type
-        data: {
-            labels: labels, // Dates
-            datasets: [{
-                label: "% of Tasks Completed", // Label for the dataset
-                data: data, // Percentages
-                backgroundColor: "rgba(75, 192, 192, 0.6)", // Bar color
-                borderColor: "rgba(75, 192, 192, 1)", // Bar border color
-                borderWidth: 1
-            }]
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "% of Tasks Completed",
+        data,
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          title: {
+            display: true,
+            text: "% Complete"
+          }
         },
-        options: {
-            responsive: true, // Chart will resize with its container
-            scales: {
-                y: {
-                    beginAtZero: true, // Y-axis starts at 0
-                    max: 100,           // Y-axis goes up to 100%
-                    title: {
-                        display: true,
-                        text: "% Complete" // Y-axis label
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date' // X-axis label
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: false } // Hide the dataset legend as it's self-explanatory
-            }
+        x: {
+          title: {
+            display: true,
+            text: "Date"
+          }
         }
-    });
-}
-
-/**
- * Confirms with the user and then clears all their progress data from localStorage.
- */
-async function clearProgress() {
-    // IMPORTANT: For local storage, use a fixed ID for simplicity
-    const userId = 'local_storage_test_user';
-
-    if (!confirm("Are you sure you want to delete ALL your progress data for this anonymous session? This cannot be undone.")) {
-        return; // User cancelled the operation
+      },
+      plugins: {
+        legend: { display: false }
+      }
     }
-
-    localStorage.removeItem(`progress_${userId}`);
-    alert("✅ All your progress data has been cleared from local storage!");
-    // After clearing, reload history, which will now be empty.
-    await loadAndShowHistory();
+  });
 }
 
 // ======================
-// Main Initialization and Event Listeners
+// Clear Data
 // ======================
-document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Setup the task checkboxes once when the app loads
-    setupTaskCheckboxes();
+async function clearProgress() {
+  const userId = 'local_storage_test_user';
+  if (confirm("Delete all progress? This cannot be undone.")) {
+    localStorage.removeItem(`progress_${userId}`);
+    alert("✅ Data cleared.");
+    loadAndShowHistory();
+  }
+}
 
-    // 2. Initialize the app for a "guest" user by loading data from localStorage
-    await loadAndShowHistory();
-
-    // 3. Attach event listeners to the buttons
-    document.getElementById('saveBtn')?.addEventListener('click', saveProgress);
-    document.getElementById('clearBtn')?.addEventListener('click', clearProgress);
+// ======================
+// Init
+// ======================
+document.addEventListener('DOMContentLoaded', () => {
+  setupTaskCheckboxes();
+  loadAndShowHistory();
+  document.getElementById('saveBtn')?.addEventListener('click', saveProgress);
+  document.getElementById('clearBtn')?.addEventListener('click', clearProgress);
 });
